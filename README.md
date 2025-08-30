@@ -35,7 +35,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-4. Open your browser and navigate to `http://localhost:8000`
+4. Open your browser and navigate to `http://localhost:8001`
 
 ## 🎮 How to Play
 
@@ -53,6 +53,40 @@ python main.py
 - `POST /math/generate` - Generate 10 random math questions
 - `POST /math/check` - Check answers and get results
 - `GET /health` - Health check endpoint
+
+## 🚀 Deployment
+
+### CapRover Deployment
+
+This project is configured for automatic deployment with CapRover:
+
+1. **Prerequisites**: 
+   - CapRover instance running on your VPS
+   - Git webhook configured to trigger builds on push
+
+2. **Configuration Files**:
+   - `captain-definition` - CapRover deployment configuration
+   - `Dockerfile` - Container configuration optimized for Kidsedu
+   - Runs on port 8001 (different from other services)
+
+3. **Auto-deployment**: 
+   - Push to GitHub repository triggers automatic build and deployment
+   - Lightweight container without Chrome/Selenium dependencies
+   - Built-in health checks and logging
+
+4. **Access**: 
+   - Production: `https://your-caprover-domain.com`
+   - Local development: `http://localhost:8001`
+
+### Docker Deployment
+
+```bash
+# Build the container
+docker build -t kidsedu .
+
+# Run the container
+docker run -p 8001:8001 kidsedu
+```
 
 ## 🎨 Game Features
 
