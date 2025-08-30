@@ -123,7 +123,7 @@ async def check_math_answers(request: MathAnswerRequest):
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy"}
+    return {"status": "healthy", "app": "kidsedu"}
 
 if __name__ == "__main__":
     import uvicorn
