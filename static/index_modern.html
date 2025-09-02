@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidsedu - Educational Games for Kids</title>
+    <link rel="stylesheet" href="/static/modern_design.css">
+</head>
+<body>
+    <!-- Floating elements -->
+    <div class="floating-element" style="top: 10%; left: 5%; animation-delay: 0s;">🎯</div>
+    <div class="floating-element" style="top: 20%; right: 10%; animation-delay: 1.5s;">📚</div>
+    <div class="floating-element" style="bottom: 30%; left: 8%; animation-delay: 3s;">🧮</div>
+    <div class="floating-element" style="bottom: 20%; right: 5%; animation-delay: 4.5s;">⭐</div>
+    <div class="floating-element" style="top: 60%; left: 3%; animation-delay: 6s;">🚀</div>
+    <div class="floating-element" style="top: 70%; right: 8%; animation-delay: 7.5s;">🎨</div>
+
+    <div class="modern-container">
+        <!-- Hero Section -->
+        <div class="game-hero">
+            <h1>Dear Students</h1>
+            <p>Find more educational content here - Perfect for young learners!</p>
+        </div>
+
+        <!-- Main Game Cards -->
+        <div class="modern-grid modern-grid-2" style="margin-bottom: 3rem;">
+            <!-- Math Game Card -->
+            <div class="modern-card animate-slide-in" style="animation-delay: 0.1s;">
+                <div class="modern-card-header">
+                    <div class="modern-card-icon" style="background: var(--gradient-blue);">
+                        <span>🧮</span>
+                    </div>
+                    <div>
+                        <h3 class="modern-card-title">Numbers</h3>
+                        <p class="modern-card-subtitle">Practice arithmetic operations</p>
+                    </div>
+                </div>
+                
+                <div class="modern-progress">
+                    <div class="modern-progress-fill" style="width: 85%"></div>
+                </div>
+                <div class="modern-progress-text">85% mastered</div>
+                
+                <div style="margin: 1.5rem 0;">
+                    <p style="color: #718096; font-size: 14px; line-height: 1.5;">
+                        Master addition, subtraction, and multiplication with interactive questions and instant feedback.
+                    </p>
+                </div>
+                
+                <a href="/math" class="modern-btn modern-btn-primary" style="width: 100%;">
+                    <span>Continue Learning</span>
+                    <span>→</span>
+                </a>
+            </div>
+
+            <!-- Vocabulary Game Card -->
+            <div class="modern-card animate-slide-in" style="animation-delay: 0.2s;">
+                <div class="modern-card-header">
+                    <div class="modern-card-icon" style="background: var(--gradient-orange);">
+                        <span>Aa</span>
+                    </div>
+                    <div>
+                        <h3 class="modern-card-title">Vocabularies</h3>
+                        <p class="modern-card-subtitle">Learn words with pictures</p>
+                    </div>
+                </div>
+                
+                <div class="modern-progress">
+                    <div class="modern-progress-fill" style="width: 62%"></div>
+                </div>
+                <div class="modern-progress-text">62% mastered</div>
+                
+                <div style="margin: 1.5rem 0;">
+                    <p style="color: #718096; font-size: 14px; line-height: 1.5;">
+                        Build vocabulary through visual learning with custom image-based questions.
+                    </p>
+                </div>
+                
+                <a href="/vocabulary" class="modern-btn modern-btn-secondary" style="width: 100%;">
+                    <span>Continue Learning</span>
+                    <span>→</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="modern-card animate-slide-in" style="animation-delay: 0.3s; margin-bottom: 3rem;">
+            <div class="modern-card-header" style="justify-content: space-between;">
+                <div>
+                    <h3 class="modern-card-title">Find more picks</h3>
+                    <p class="modern-card-subtitle">Explore additional learning activities</p>
+                </div>
+                <div style="font-size: 24px;">⚙️</div>
+            </div>
+            
+            <div class="modern-grid modern-grid-2" style="gap: 1rem;">
+                <div style="background: var(--gradient-orange); border-radius: var(--radius-lg); padding: 1.5rem; color: white; text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 16px;">Math Practice</h4>
+                    <p style="margin: 0; font-size: 12px; opacity: 0.9;">Quick arithmetic drills</p>
+                </div>
+                
+                <div style="background: var(--gradient-teal); border-radius: var(--radius-lg); padding: 1.5rem; color: white; text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📝</div>
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 16px;">Vocabulary Builder</h4>
+                    <p style="margin: 0; font-size: 12px; opacity: 0.9;">Add new words</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="/vocabulary/config" class="modern-btn modern-btn-teal">
+                    <span>🔧</span>
+                    <span>Configure Vocabulary</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Achievement Stats -->
+        <div class="modern-grid modern-grid-3 animate-slide-in" style="animation-delay: 0.4s;">
+            <div class="modern-card" style="text-align: center; background: var(--gradient-blue); color: white;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏆</div>
+                <h4 style="font-size: 1.5rem; margin: 0 0 0.5rem 0;">25</h4>
+                <p style="margin: 0; opacity: 0.9;">Problems Solved</p>
+            </div>
+            
+            <div class="modern-card" style="text-align: center; background: var(--gradient-orange); color: white;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎯</div>
+                <h4 style="font-size: 1.5rem; margin: 0 0 0.5rem 0;">12</h4>
+                <p style="margin: 0; opacity: 0.9;">Words Learned</p>
+            </div>
+            
+            <div class="modern-card" style="text-align: center; background: var(--gradient-success); color: white;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⭐</div>
+                <h4 style="font-size: 1.5rem; margin: 0 0 0.5rem 0;">89%</h4>
+                <p style="margin: 0; opacity: 0.9;">Average Score</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem 0; color: #718096;">
+            <p style="margin: 0;">🌟 Keep learning and growing every day! 🌟</p>
+        </div>
+    </div>
+
+    <script>
+        // Add entrance animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.animate-slide-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease forwards';
+                observer.observe(card);
+            });
+        });
+
+        // Add button click effects
+        document.querySelectorAll('.modern-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.4);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+        
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

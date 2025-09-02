@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabularies - Learning Game</title>
+    <link rel="stylesheet" href="/static/modern_design.css">
+</head>
+<body>
+    <!-- Floating elements -->
+    <div class="floating-element" style="top: 15%; left: 8%; animation-delay: 0s;">📖</div>
+    <div class="floating-element" style="top: 25%; right: 12%; animation-delay: 1s;">🔤</div>
+    <div class="floating-element" style="bottom: 25%; left: 15%; animation-delay: 2s;">💭</div>
+    <div class="floating-element" style="bottom: 35%; right: 8%; animation-delay: 3s;">📝</div>
+
+    <div class="modern-container">
+        <!-- Navigation -->
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <a href="/" class="modern-btn" style="background: #F7FAFC; color: #4A5568; padding: 0.5rem 1rem;">
+                <span>←</span>
+            </a>
+            <h1 style="margin: 0; font-size: 1.5rem; color: #2D3748;">Vocabularies</h1>
+        </div>
+
+        <!-- Setup Section -->
+        <div id="setup-section" class="modern-card animate-slide-in">
+            <div class="modern-card-header">
+                <div class="modern-card-icon" style="background: var(--gradient-orange);">
+                    <span>Aa</span>
+                </div>
+                <div>
+                    <h3 class="modern-card-title">Vocabulary Challenge</h3>
+                    <p class="modern-card-subtitle">Learn words through pictures</p>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 142, 104, 0.1) 100%); padding: 1.5rem; border-radius: var(--radius-lg); margin: 1.5rem 0;">
+                <h4 style="margin: 0 0 1rem 0; color: var(--accent-orange);">🎯 How to Play:</h4>
+                <ul style="margin: 0; padding-left: 1.5rem; color: #4A5568; line-height: 1.6;">
+                    <li>Look at the picture carefully</li>
+                    <li>Choose the correct vocabulary word</li>
+                    <li>Answer 10 unique questions</li>
+                    <li>Build your vocabulary skills!</li>
+                </ul>
+            </div>
+
+            <button class="modern-btn modern-btn-secondary animate-pulse" onclick="startGame()" style="width: 100%; font-size: 1.125rem; padding: 1rem;">
+                <span>📚</span>
+                <span>Start Vocabulary Challenge</span>
+            </button>
+            
+            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #F1F5F9;">
+                <h4 style="margin: 0 0 1rem 0; color: #2D3748;">⚙️ Need to add vocabulary?</h4>
+                <p style="margin: 0 0 1rem 0; color: #718096;">Upload images and assign vocabulary words first!</p>
+                <a href="/vocabulary/config" class="modern-btn modern-btn-teal">
+                    <span>🔧</span>
+                    <span>Configure Vocabulary</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div id="game-section" class="hidden">
+            <!-- Progress Header -->
+            <div class="modern-card" style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <div id="question-counter" style="font-size: 0.875rem; font-weight: 600; color: var(--accent-orange);">
+                            Question 1 of 10
+                        </div>
+                        <div style="font-size: 0.75rem; color: #718096; margin-top: 0.25rem;">
+                            What word matches this picture? 🖼️
+                        </div>
+                    </div>
+                    <div style="background: var(--gradient-orange); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-xl); font-weight: 600; font-size: 0.875rem;">
+                        <span id="current-score">0</span>/10
+                    </div>
+                </div>
+                <div class="modern-progress">
+                    <div class="modern-progress-fill" id="progress-fill" style="width: 0%; background: var(--gradient-orange);"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="current-question" class="question-card animate-slide-in">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+
+            <!-- Submit Button -->
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button class="modern-btn modern-btn-secondary" onclick="submitAnswer()" id="submit-btn" disabled style="font-size: 1.125rem; padding: 1rem 2rem;">
+                    <span>✨</span>
+                    <span>Submit Answer</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="hidden">
+            <div class="results-card animate-slide-in" style="background: var(--gradient-orange);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
+                <div class="results-score" id="final-score">8/10</div>
+                <div class="results-message" id="motivation-message">Excellent work! You're amazing with words!</div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="modern-btn" onclick="playAgain()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3);">
+                        <span>🔄</span>
+                        <span>Try Again</span>
+                    </button>
+                    <a href="/" class="modern-btn" style="background: white; color: var(--accent-orange);">
+                        <span>🏠</span>
+                        <span>Home</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGame = {
+            questions: [],
+            currentQuestionIndex: 0,
+            userAnswers: [],
+            correctAnswers: [],
+            score: 0
+        };
+
+        async function startGame() {
+            try {
+                const response = await fetch('/vocabulary/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate questions');
+                }
+
+                const data = await response.json();
+                currentGame.questions = data.questions;
+                currentGame.correctAnswers = data.questions.map(q => q.correct_answer);
+                currentGame.currentQuestionIndex = 0;
+                currentGame.userAnswers = [];
+                currentGame.score = 0;
+
+                // Transition to game
+                document.getElementById('setup-section').classList.add('hidden');
+                document.getElementById('game-section').classList.remove('hidden');
+                document.getElementById('results-section').classList.add('hidden');
+
+                displayCurrentQuestion();
+            } catch (error) {
+                console.error('Error starting game:', error);
+                let errorMessage = '😅 Oops! Something went wrong.';
+                
+                if (error.message.includes('Not enough vocabulary items')) {
+                    errorMessage = '📚 You need at least 4 vocabulary items to play! Please configure some vocabulary first.';
+                } else if (error.message.includes('Supabase not configured')) {
+                    errorMessage = '⚙️ Supabase is not configured. Please check your environment variables.';
+                }
+                
+                showToast(errorMessage, 'warning');
+            }
+        }
+
+        function displayCurrentQuestion() {
+            const question = currentGame.questions[currentGame.currentQuestionIndex];
+            const questionContainer = document.getElementById('current-question');
+            
+            // Update progress
+            const progress = ((currentGame.currentQuestionIndex + 1) / currentGame.questions.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('question-counter').textContent = 
+                `Question ${currentGame.currentQuestionIndex + 1} of ${currentGame.questions.length}`;
+            document.getElementById('current-score').textContent = currentGame.score;
+
+            questionContainer.innerHTML = `
+                <div class="question-number">Question ${currentGame.currentQuestionIndex + 1}</div>
+                <img src="${question.image_url}" alt="Vocabulary question" class="question-image" loading="lazy">
+                <div class="question-text">What is this?</div>
+                <div class="options-grid">
+                    ${question.options.map((option, index) => `
+                        <div class="option-card" onclick="selectOption('${option}', this)">
+                            ${option}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        function selectOption(value, element) {
+            document.querySelectorAll('.option-card').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            currentGame.selectedAnswer = value;
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (currentGame.selectedAnswer === undefined) return;
+
+            // Check if correct
+            const isCorrect = currentGame.selectedAnswer === currentGame.correctAnswers[currentGame.currentQuestionIndex];
+            if (isCorrect) currentGame.score++;
+
+            currentGame.userAnswers.push(currentGame.selectedAnswer);
+            currentGame.selectedAnswer = undefined;
+            currentGame.currentQuestionIndex++;
+            
+            if (currentGame.currentQuestionIndex < currentGame.questions.length) {
+                displayCurrentQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        async function showResults() {
+            try {
+                const response = await fetch('/vocabulary/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        answers: currentGame.userAnswers,
+                        correct_answers: currentGame.correctAnswers
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to check answers');
+
+                const results = await response.json();
+                
+                document.getElementById('game-section').classList.add('hidden');
+                document.getElementById('results-section').classList.remove('hidden');
+
+                document.getElementById('final-score').textContent = 
+                    `${results.score}/${results.total}`;
+                document.getElementById('motivation-message').textContent = results.message;
+
+                if (results.percentage >= 70) {
+                    createConfetti();
+                }
+
+            } catch (error) {
+                console.error('Error checking answers:', error);
+                showToast('😅 Oops! Something went wrong checking your answers.', 'error');
+            }
+        }
+
+        function playAgain() {
+            document.getElementById('setup-section').classList.remove('hidden');
+            document.getElementById('game-section').classList.add('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            
+            currentGame = {
+                questions: [],
+                currentQuestionIndex: 0,
+                userAnswers: [],
+                correctAnswers: [],
+                score: 0
+            };
+        }
+
+        function createConfetti() {
+            const colors = ['#FF6B35', '#4A6CF7', '#26C6DA', '#2ECC71', '#F39C12', '#9B59B6'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            confetti.parentNode.removeChild(confetti);
+                        }
+                    }, 5000);
+                }, i * 100);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const colors = {
+                info: 'var(--gradient-blue)',
+                success: 'var(--gradient-success)',
+                warning: 'var(--gradient-orange)',
+                error: 'var(--gradient-orange)'
+            };
+            
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-lg);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+                font-weight: 600;
+            `;
+            toast.textContent = message;
+
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const submitBtn = document.getElementById('submit-btn');
+                if (!submitBtn.disabled && !document.getElementById('game-section').classList.contains('hidden')) {
+                    submitAnswer();
+                }
+            }
+
+            if (event.key >= '1' && event.key <= '4') {
+                const options = document.querySelectorAll('.option-card');
+                const optionIndex = parseInt(event.key) - 1;
+                if (options[optionIndex]) {
+                    const optionValue = options[optionIndex].textContent.trim();
+                    selectOption(optionValue, options[optionIndex]);
+                }
+            }
+        });
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            .hidden { display: none !important; }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

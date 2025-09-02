@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Super Fun Vocabulary Game! 📚</title>
+    <link rel="stylesheet" href="/static/math_game.css">
+    <style>
+        .vocabulary-question-image {
+            max-width: 300px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 3px solid #fff;
+        }
+        .question-container {
+            text-align: center;
+        }
+        .vocabulary-symbols {
+            position: fixed;
+            font-size: 2rem;
+            color: rgba(102, 126, 234, 0.3);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .vocabulary-symbols:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .vocabulary-symbols:nth-child(2) { top: 20%; right: 15%; animation-delay: 1s; }
+        .vocabulary-symbols:nth-child(3) { bottom: 20%; left: 20%; animation-delay: 2s; }
+        .vocabulary-symbols:nth-child(4) { bottom: 30%; right: 10%; animation-delay: 3s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(-10px) rotate(-5deg); }
+            75% { transform: translateY(-15px) rotate(3deg); }
+        }
+        
+        .setup-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .setup-instructions {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .config-link {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 24px;
+            background: #ff6b6b;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .config-link:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating vocabulary symbols -->
+    <div class="vocabulary-symbols">📖</div>
+    <div class="vocabulary-symbols">🔤</div>
+    <div class="vocabulary-symbols">📝</div>
+    <div class="vocabulary-symbols">💡</div>
+
+    <div class="container">
+        <h1>📚 Super Fun Vocabulary Game! 🚀</h1>
+        
+        <!-- Setup Section -->
+        <div id="setup-section" class="setup-section">
+            <div class="setup-instructions">
+                <h3>🎯 How to Play:</h3>
+                <p>Look at the picture and choose the correct vocabulary word from the options below!</p>
+                <p>You'll answer 10 questions and get a score at the end.</p>
+            </div>
+            
+            <h2>🎮 Ready to start?</h2>
+            <button class="btn btn-primary" onclick="startGame()">🎮 Start Playing! 🎮</button>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e8ed;">
+                <h3 style="color: #667eea;">⚙️ Need to add vocabulary?</h3>
+                <p>Upload images and assign vocabulary words first!</p>
+                <a href="/vocabulary/config" class="config-link">📚 Configure Vocabulary</a>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div id="game-section" class="hidden">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div id="current-question">Question will appear here</div>
+            <div class="text-center" style="margin: 20px 0;">
+                <button class="btn btn-success" onclick="submitAnswer()" id="submit-btn" disabled>
+                    ✨ Answer! ✨
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="hidden">
+            <div class="score-display">
+                <div class="score-number" id="final-score">0/10</div>
+                <div class="motivation-message" id="motivation-message">Great job!</div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-info" onclick="playAgain()">🔄 Play Again! 🔄</button>
+                    <a href="/" class="btn btn-secondary" style="margin-left: 10px;">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGame = {
+            questions: [],
+            currentQuestionIndex: 0,
+            userAnswers: [],
+            correctAnswers: []
+        };
+
+        async function startGame() {
+            try {
+                const response = await fetch('/vocabulary/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate questions');
+                }
+
+                const data = await response.json();
+                currentGame.questions = data.questions;
+                currentGame.correctAnswers = data.questions.map(q => q.correct_answer);
+                currentGame.currentQuestionIndex = 0;
+                currentGame.userAnswers = [];
+
+                // Hide setup, show game
+                document.getElementById('setup-section').classList.add('hidden');
+                document.getElementById('game-section').classList.remove('hidden');
+                document.getElementById('results-section').classList.add('hidden');
+
+                displayCurrentQuestion();
+            } catch (error) {
+                console.error('Error starting game:', error);
+                let errorMessage = '😅 Oops! Something went wrong.';
+                
+                if (error.message.includes('Not enough vocabulary items')) {
+                    errorMessage = '📚 You need at least 4 vocabulary items to play! Please configure some vocabulary first.';
+                } else if (error.message.includes('Supabase not configured')) {
+                    errorMessage = '⚙️ Supabase is not configured. Please check your environment variables.';
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        function displayCurrentQuestion() {
+            const question = currentGame.questions[currentGame.currentQuestionIndex];
+            const questionContainer = document.getElementById('current-question');
+            
+            // Update progress bar
+            const progress = ((currentGame.currentQuestionIndex + 1) / currentGame.questions.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+
+            questionContainer.innerHTML = `
+                <div class="question-container">
+                    <div class="question-number">
+                        Question ${currentGame.currentQuestionIndex + 1} of ${currentGame.questions.length}
+                    </div>
+                    <img src="${question.image_url}" alt="Vocabulary question" class="vocabulary-question-image" loading="lazy">
+                    <div class="question-text">What is this?</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => `
+                            <div class="option" onclick="selectOption('${option}', this)">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Disable submit button until an option is selected
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        function selectOption(value, element) {
+            // Remove previous selections
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Select current option
+            element.classList.add('selected');
+            currentGame.selectedAnswer = value;
+            
+            // Enable submit button
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (currentGame.selectedAnswer === undefined) {
+                return;
+            }
+
+            // Store the answer
+            currentGame.userAnswers.push(currentGame.selectedAnswer);
+            currentGame.selectedAnswer = undefined;
+
+            // Move to next question or show results
+            currentGame.currentQuestionIndex++;
+            
+            if (currentGame.currentQuestionIndex < currentGame.questions.length) {
+                displayCurrentQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        async function showResults() {
+            try {
+                const response = await fetch('/vocabulary/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        answers: currentGame.userAnswers,
+                        correct_answers: currentGame.correctAnswers
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to check answers');
+                }
+
+                const results = await response.json();
+                
+                // Hide game section, show results
+                document.getElementById('game-section').classList.add('hidden');
+                document.getElementById('results-section').classList.remove('hidden');
+
+                // Display results
+                document.getElementById('final-score').textContent = 
+                    `${results.score}/${results.total} (${Math.round(results.percentage)}%)`;
+                document.getElementById('motivation-message').textContent = results.message;
+
+                // Add confetti for good scores
+                if (results.percentage >= 70) {
+                    createConfetti();
+                }
+
+            } catch (error) {
+                console.error('Error checking answers:', error);
+                alert('😅 Oops! Something went wrong checking your answers. 😅');
+            }
+        }
+
+        function playAgain() {
+            // Show setup section again
+            document.getElementById('setup-section').classList.remove('hidden');
+            document.getElementById('game-section').classList.add('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+            
+            // Reset game state
+            currentGame = {
+                questions: [],
+                currentQuestionIndex: 0,
+                userAnswers: [],
+                correctAnswers: []
+            };
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffa726', '#ab47bc'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    // Remove confetti after animation
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            confetti.parentNode.removeChild(confetti);
+                        }
+                    }, 5000);
+                }, i * 100);
+            }
+        }
+
+        // Allow Enter key to submit answers
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const submitBtn = document.getElementById('submit-btn');
+                if (!submitBtn.disabled && !submitBtn.classList.contains('hidden')) {
+                    submitAnswer();
+                }
+            }
+        });
+
+        // Add some extra fun with keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '1' && event.key <= '4') {
+                const options = document.querySelectorAll('.option');
+                const optionIndex = parseInt(event.key) - 1;
+                if (options[optionIndex]) {
+                    const optionValue = options[optionIndex].textContent.trim();
+                    selectOption(optionValue, options[optionIndex]);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

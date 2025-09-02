@@ -1,21 +1,32 @@
 # 🌈 Kidsedu - Educational Games for Kids 🚀
 
-A fun and colorful web-based math game designed specifically for children to learn and practice basic arithmetic operations in an engaging way.
+Kidsedu is a FastAPI-based educational platform featuring interactive games designed to make learning fun for kids. Currently includes Math Game and English Vocabulary Game.
 
 ## ✨ Features
 
-- **🧮 Interactive Math Game**: Addition, subtraction, and multiplication problems
-- **🎨 Colorful UI**: Kid-friendly design with animations and effects
-- **🏆 Progress Tracking**: Visual progress bar and scoring system
-- **🎉 Motivational Feedback**: Encouraging messages based on performance
-- **📱 Responsive Design**: Works on desktop, tablet, and mobile devices
-- **🎯 Customizable Difficulty**: Choose maximum numbers for problems
+### 🧮 Math Game
+- **Interactive arithmetic problems**: Addition, subtraction, and multiplication
+- **Customizable difficulty levels**: Choose maximum numbers (5-100)
+- **Multiple-choice questions**: Visual feedback and progress tracking
+- **Motivational messages**: Encouraging feedback based on performance
+- **Confetti celebrations**: For good scores!
+
+### 📚 English Vocabulary Game
+- **Custom image-based vocabulary learning**: Upload your own images
+- **Automatic image optimization**: Images resized to 30% of original size for faster loading
+- **Supabase integration**: Cloud storage for images and vocabulary data
+- **Bulk vocabulary assignment**: Type vocabularies for all images at once
+- **Visual learning approach**: Learn words through pictures
+- **Configuration interface**: Assign vocabulary words to uploaded images
+- **Duplicate-free questions**: No repeated vocabulary items in a single game
+- **Same scoring system**: Consistent experience across games
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.7+
+- Python 3.11+
 - pip
+- Supabase account (for vocabulary game)
 
 ### Installation
 
@@ -30,28 +41,66 @@ cd Kidsedu
 pip install -r requirements.txt
 ```
 
-3. Run the application:
+3. **Configure Supabase (for vocabulary game):**
+   - Create a Supabase project at [supabase.com](https://supabase.com)
+   - Copy `.env.template` to `.env`
+   - Fill in your Supabase URL and anon key:
+   ```
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Set up Supabase database:**
+   - Run the SQL commands from `supabase_schema.sql` in your Supabase SQL editor
+   - This creates the `vocabulary_items` table and storage bucket
+
+5. Run the application:
 ```bash
 python main.py
 ```
 
-4. Open your browser and navigate to `http://localhost:8001`
+6. Open your browser and navigate to `http://localhost:8001`
 
 ## 🎮 How to Play
 
+### Math Game
 1. **Choose Difficulty**: Select the maximum number for your math problems (5-100)
 2. **Start Playing**: Click "Start Playing!" to begin
 3. **Solve Problems**: Choose the correct answer from 4 multiple choice options
 4. **Track Progress**: Watch the colorful progress bar fill up as you complete questions
 5. **See Results**: Get your score and motivational message at the end
-6. **Play Again**: Challenge yourself with a new set of questions!
+
+### Vocabulary Game
+1. **First time setup:**
+   - Go to "Configure Vocabulary" from the home page
+   - Upload images (JPG, PNG, etc.) - they'll be automatically resized to 30%
+   - **Option 1 - Bulk Assignment:** Use the "Quick Assignment" section to type vocabularies for all images at once
+   - **Option 2 - Individual Assignment:** Assign vocabulary words to each image individually
+   - Save your vocabulary
+
+2. **Playing the game:**
+   - Go to "Play Vocabulary Game"
+   - Look at the image and choose the correct vocabulary word
+   - Answer 10 unique questions (no duplicates) and see your score!
 
 ## 🛠️ API Endpoints
 
-- `GET /` - Home page with math game
-- `GET /math` - Direct access to math game
+### Math Game
+- `GET /math` - Math game page
 - `POST /math/generate` - Generate 10 random math questions
 - `POST /math/check` - Check answers and get results
+
+### Vocabulary Game
+- `GET /vocabulary` - Vocabulary game page
+- `GET /vocabulary/config` - Configuration page
+- `GET /vocabulary/items` - Get all vocabulary items
+- `POST /vocabulary/upload` - Upload new image
+- `POST /vocabulary/update/{item_id}` - Update vocabulary for image
+- `POST /vocabulary/generate` - Generate 10 vocabulary questions
+- `POST /vocabulary/check` - Check answers and get score
+
+### General
+- `GET /` - Home page with game selection
 - `GET /health` - Health check endpoint
 
 ## 🚀 Deployment
@@ -115,12 +164,18 @@ docker run -p 8001:8001 kidsedu
 ### Project Structure
 ```
 Kidsedu/
-├── main.py                 # FastAPI application
-├── requirements.txt        # Python dependencies
-├── README.md              # Project documentation
+├── main.py                          # FastAPI application
+├── requirements.txt                 # Python dependencies  
+├── README.md                        # Project documentation
+├── .env.template                    # Environment variables template
+├── supabase_schema.sql             # Database schema for vocabulary game
+├── CLAUDE.md                       # Project instructions
 └── static/
-    ├── math_game.html     # Game interface
-    └── math_game.css      # Styling and animations
+    ├── index.html                  # Home page with game selection
+    ├── math_game.html              # Math game interface
+    ├── math_game.css               # Shared styles and animations
+    ├── vocabulary_game.html        # Vocabulary game interface
+    └── vocabulary_config.html      # Vocabulary configuration page
 ```
 
 ### Contributing
