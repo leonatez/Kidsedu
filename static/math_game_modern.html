@@ -45,6 +45,30 @@
             </div>
 
             <div style="margin: 1.5rem 0;">
+                <label for="operations" style="display: block; font-weight: 600; color: #2D3748; margin-bottom: 0.5rem;">
+                    🧮 Operations to practice:
+                </label>
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <input type="radio" id="basic-ops" name="operations" value="basic" checked style="display: none;">
+                        <label for="basic-ops" class="operation-option" style="display: block; padding: 1rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); text-align: center; cursor: pointer; transition: all 0.3s ease; background: var(--gradient-blue); color: white; border-color: var(--primary-blue);">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">➕➖</div>
+                            <div style="font-size: 0.875rem; font-weight: 600;">Basic</div>
+                            <div style="font-size: 0.75rem; opacity: 0.9;">Add & Subtract</div>
+                        </label>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="radio" id="all-ops" name="operations" value="all" style="display: none;">
+                        <label for="all-ops" class="operation-option" style="display: block; padding: 1rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); text-align: center; cursor: pointer; transition: all 0.3s ease;">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">➕➖✖️➗</div>
+                            <div style="font-size: 0.875rem; font-weight: 600;">All Operations</div>
+                            <div style="font-size: 0.75rem; color: #718096;">Add, Subtract, Multiply, Divide</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin: 1.5rem 0;">
                 <label for="max-number" style="display: block; font-weight: 600; color: #2D3748; margin-bottom: 0.5rem;">
                     📊 Maximum number for problems:
                 </label>
@@ -99,17 +123,46 @@
 
         <!-- Results Section -->
         <div id="results-section" class="hidden">
-            <div class="results-card animate-slide-in">
+            <!-- Score Header -->
+            <div class="results-card animate-slide-in" style="background: var(--gradient-blue); margin-bottom: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
                 <div class="results-score" id="final-score">8/10</div>
                 <div class="results-message" id="motivation-message">Excellent work! You're amazing at math!</div>
+            </div>
+            
+            <!-- Detailed Results -->
+            <div class="modern-card animate-slide-in" style="margin-bottom: 1.5rem;">
+                <div class="modern-card-header" style="margin-bottom: 1.5rem;">
+                    <div class="modern-card-icon" style="background: var(--gradient-success);">
+                        <span>📋</span>
+                    </div>
+                    <div>
+                        <h3 class="modern-card-title">Detailed Results</h3>
+                        <p class="modern-card-subtitle">Review your answers</p>
+                    </div>
+                </div>
                 
+                <!-- Results Table Header -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; padding: 1rem; background: #F7FAFC; border-radius: var(--radius-base); margin-bottom: 1rem; font-weight: 600; color: #2D3748; font-size: 0.875rem;">
+                    <div>Question</div>
+                    <div>Your Answer</div>
+                    <div>Correct Answer</div>
+                </div>
+                
+                <!-- Results List -->
+                <div id="detailed-results" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="modern-card animate-slide-in">
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button class="modern-btn" onclick="playAgain()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3);">
+                    <button class="modern-btn modern-btn-primary" onclick="playAgain()">
                         <span>🔄</span>
                         <span>Try Again</span>
                     </button>
-                    <a href="/" class="modern-btn" style="background: white; color: var(--primary-blue);">
+                    <a href="/" class="modern-btn" style="background: #F7FAFC; color: #4A5568;">
                         <span>🏠</span>
                         <span>Home</span>
                     </a>
@@ -138,8 +191,25 @@
             this.style.boxShadow = 'none';
         });
 
+        // Handle operation selection styling
+        document.querySelectorAll('input[name="operations"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.operation-option').forEach(label => {
+                    label.style.background = '';
+                    label.style.color = '#4A5568';
+                    label.style.borderColor = '#E2E8F0';
+                });
+                
+                const selectedLabel = document.querySelector(`label[for="${this.id}"]`);
+                selectedLabel.style.background = 'var(--gradient-blue)';
+                selectedLabel.style.color = 'white';
+                selectedLabel.style.borderColor = 'var(--primary-blue)';
+            });
+        });
+
         async function startGame() {
             const maxNumber = parseInt(document.getElementById('max-number').value);
+            const operations = document.querySelector('input[name="operations"]:checked').value;
             
             if (maxNumber < 5 || maxNumber > 100) {
                 showToast('🤔 Please choose a number between 5 and 100!', 'warning');
@@ -150,7 +220,10 @@
                 const response = await fetch('/math/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ max_number: maxNumber })
+                    body: JSON.stringify({ 
+                        max_number: maxNumber,
+                        operations: operations
+                    })
                 });
 
                 if (!response.ok) throw new Error('Failed to generate questions');
@@ -250,6 +323,9 @@
                     `${results.score}/${results.total}`;
                 document.getElementById('motivation-message').textContent = results.message;
 
+                // Populate detailed results
+                populateDetailedResults();
+
                 if (results.percentage >= 70) {
                     createConfetti();
                 }
@@ -258,6 +334,50 @@
                 console.error('Error checking answers:', error);
                 showToast('😅 Oops! Something went wrong checking your answers.', 'error');
             }
+        }
+
+        function populateDetailedResults() {
+            const detailedResultsContainer = document.getElementById('detailed-results');
+            let resultsHTML = '';
+            
+            currentGame.questions.forEach((question, index) => {
+                const userAnswer = currentGame.userAnswers[index] || 'No Answer';
+                const correctAnswer = currentGame.correctAnswers[index];
+                const isCorrect = userAnswer === correctAnswer;
+                
+                resultsHTML += `
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; padding: 1rem; border-bottom: 1px solid #E2E8F0; align-items: center;">
+                        <!-- Question Column -->
+                        <div style="padding: 0 0.5rem;">
+                            <div style="font-weight: 600; color: #2D3748; margin-bottom: 0.25rem;">
+                                ${question.question}
+                            </div>
+                        </div>
+                        
+                        <!-- User Answer Column -->
+                        <div style="text-align: center; padding: 0 0.5rem;">
+                            <div style="background: ${isCorrect ? '#10B981' : '#EF4444'}; color: white; padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-weight: 600; font-size: 0.875rem; display: inline-block; min-width: 80px;">
+                                ${userAnswer}
+                            </div>
+                            <div style="font-size: 0.75rem; margin-top: 0.25rem; color: ${isCorrect ? '#10B981' : '#EF4444'};">
+                                ${isCorrect ? '✅ Correct' : '❌ Wrong'}
+                            </div>
+                        </div>
+                        
+                        <!-- Correct Answer Column -->
+                        <div style="text-align: center; padding: 0 0.5rem;">
+                            <div style="background: #10B981; color: white; padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-weight: 600; font-size: 0.875rem; display: inline-block; min-width: 80px;">
+                                ${correctAnswer}
+                            </div>
+                            <div style="font-size: 0.75rem; margin-top: 0.25rem; color: #10B981;">
+                                ✓ Answer
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            detailedResultsContainer.innerHTML = resultsHTML;
         }
 
         function playAgain() {

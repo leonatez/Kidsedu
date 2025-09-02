@@ -35,6 +35,7 @@ class MathQuestion(BaseModel):
 
 class MathGameRequest(BaseModel):
     max_number: int
+    operations: Optional[str] = "basic"
 
 class MathGameResponse(BaseModel):
     questions: List[MathQuestion]
@@ -92,41 +93,75 @@ async def generate_math_questions(request: MathGameRequest):
     questions = []
     max_num = min(request.max_number, 100)  # Cap at 100 for safety
     
+    # Determine available operations based on selection
+    if request.operations == "basic":
+        available_operations = ['+', '-']
+    else:  # "all"
+        available_operations = ['+', '-', '*', '/']
+    
     for i in range(10):
-        # Generate two random numbers
-        num1 = random.randint(1, max_num)
-        num2 = random.randint(1, max_num)
-        
-        # Random operation (addition, subtraction, multiplication)
-        operation = random.choice(['+', '-', '*'])
+        # Random operation from available operations
+        operation = random.choice(available_operations)
         
         if operation == '+':
+            num1 = random.randint(1, max_num)
+            num2 = random.randint(1, max_num)
             answer = num1 + num2
             question_text = f"{num1} + {num2} = ?"
         elif operation == '-':
             # Ensure positive result for kids
+            num1 = random.randint(1, max_num)
+            num2 = random.randint(1, max_num)
             if num1 < num2:
                 num1, num2 = num2, num1
             answer = num1 - num2
             question_text = f"{num1} - {num2} = ?"
-        else:  # multiplication
+        elif operation == '*':
             # Keep numbers smaller for multiplication
             num1 = random.randint(1, min(12, max_num))
             num2 = random.randint(1, min(12, max_num))
             answer = num1 * num2
             question_text = f"{num1} × {num2} = ?"
+        else:  # division
+            # Generate division that results in whole numbers
+            # Start with answer and multiply to get dividend
+            answer = random.randint(1, min(20, max_num))  # Keep division results reasonable
+            num2 = random.randint(2, min(12, max_num))  # Divisor (avoid 1 for meaningful division)
+            num1 = answer * num2  # Dividend (ensures whole number result)
+            question_text = f"{num1} ÷ {num2} = ?"
         
         # Generate 3 wrong answers
         wrong_answers = []
         for _ in range(3):
-            while True:
-                wrong = answer + random.randint(-10, 10)
+            attempts = 0
+            while attempts < 20:  # Prevent infinite loops
+                if operation == '/':
+                    # For division, generate reasonable wrong answers
+                    wrong = answer + random.randint(-5, 5)
+                else:
+                    wrong = answer + random.randint(-10, 10)
+                
                 if wrong != answer and wrong > 0 and wrong not in wrong_answers:
                     wrong_answers.append(wrong)
                     break
+                attempts += 1
+            
+            # If we couldn't generate a unique wrong answer, create one manually
+            if len(wrong_answers) < (len(wrong_answers) + 1):
+                for offset in [-1, 1, -2, 2, -3, 3]:
+                    candidate = answer + offset
+                    if candidate > 0 and candidate not in wrong_answers and candidate != answer:
+                        wrong_answers.append(candidate)
+                        break
+        
+        # Ensure we have exactly 3 wrong answers
+        while len(wrong_answers) < 3:
+            candidate = answer + len(wrong_answers) + 1
+            if candidate not in wrong_answers:
+                wrong_answers.append(candidate)
         
         # Create options (1 correct + 3 wrong, shuffled)
-        options = [answer] + wrong_answers
+        options = [answer] + wrong_answers[:3]
         random.shuffle(options)
         
         questions.append(MathQuestion(
