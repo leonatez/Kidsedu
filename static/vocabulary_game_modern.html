@@ -60,10 +60,10 @@
         </div>
 
         <!-- Game Section -->
-        <div id="game-section" class="hidden">
-            <!-- Progress Header -->
-            <div class="modern-card" style="margin-bottom: 1.5rem;">
-                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+        <div id="game-section" class="hidden" style="height: calc(100vh - 100px); display: flex; flex-direction: column;">
+            <!-- Compact Progress Header -->
+            <div class="modern-card" style="margin-bottom: 1rem; padding: 1rem; flex-shrink: 0;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.75rem;">
                     <div>
                         <div id="question-counter" style="font-size: 0.875rem; font-weight: 600; color: var(--accent-orange);">
                             Question 1 of 10
@@ -72,7 +72,7 @@
                             What word matches this picture? 🖼️
                         </div>
                     </div>
-                    <div style="background: var(--gradient-orange); color: white; padding: 0.5rem 1rem; border-radius: var(--radius-xl); font-weight: 600; font-size: 0.875rem;">
+                    <div style="background: var(--gradient-orange); color: white; padding: 0.4rem 0.8rem; border-radius: var(--radius-xl); font-weight: 600; font-size: 0.875rem;">
                         <span id="current-score">0</span>/10
                     </div>
                 </div>
@@ -81,14 +81,14 @@
                 </div>
             </div>
 
-            <!-- Question Card -->
-            <div id="current-question" class="question-card animate-slide-in">
+            <!-- Compact Question Card -->
+            <div id="current-question" class="question-card animate-slide-in" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; margin-bottom: 1rem;">
                 <!-- Dynamic content will be inserted here -->
             </div>
 
-            <!-- Submit Button -->
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <button class="modern-btn modern-btn-secondary" onclick="submitAnswer()" id="submit-btn" disabled style="font-size: 1.125rem; padding: 1rem 2rem;">
+            <!-- Compact Submit Button -->
+            <div style="text-align: center; flex-shrink: 0;">
+                <button class="modern-btn modern-btn-secondary" onclick="submitAnswer()" id="submit-btn" disabled style="font-size: 1rem; padding: 0.75rem 1.5rem;">
                     <span>✨</span>
                     <span>Submit Answer</span>
                 </button>
@@ -97,17 +97,46 @@
 
         <!-- Results Section -->
         <div id="results-section" class="hidden">
-            <div class="results-card animate-slide-in" style="background: var(--gradient-orange);">
+            <!-- Score Header -->
+            <div class="results-card animate-slide-in" style="background: var(--gradient-orange); margin-bottom: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
                 <div class="results-score" id="final-score">8/10</div>
                 <div class="results-message" id="motivation-message">Excellent work! You're amazing with words!</div>
-                
+            </div>
+
+            <!-- Detailed Results -->
+            <div class="modern-card animate-slide-in" style="margin-bottom: 1.5rem;">
+                <div class="modern-card-header" style="margin-bottom: 1.5rem;">
+                    <div class="modern-card-icon" style="background: var(--gradient-blue);">
+                        <span>📋</span>
+                    </div>
+                    <div>
+                        <h3 class="modern-card-title">Detailed Results</h3>
+                        <p class="modern-card-subtitle">Review your answers</p>
+                    </div>
+                </div>
+
+                <!-- Results Table Header -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; padding: 1rem; background: #F8FAFC; border-radius: var(--radius-lg); margin-bottom: 1rem; font-weight: 600; color: #475569; font-size: 0.875rem; text-align: center;">
+                    <div>Picture</div>
+                    <div>Your Answer</div>
+                    <div>Correct Answer</div>
+                </div>
+
+                <!-- Results List -->
+                <div id="detailed-results" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="modern-card animate-slide-in">
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button class="modern-btn" onclick="playAgain()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3);">
+                    <button class="modern-btn modern-btn-secondary" onclick="playAgain()">
                         <span>🔄</span>
                         <span>Try Again</span>
                     </button>
-                    <a href="/" class="modern-btn" style="background: white; color: var(--accent-orange);">
+                    <a href="/" class="modern-btn modern-btn-teal">
                         <span>🏠</span>
                         <span>Home</span>
                     </a>
@@ -176,12 +205,13 @@
             document.getElementById('current-score').textContent = currentGame.score;
 
             questionContainer.innerHTML = `
-                <div class="question-number">Question ${currentGame.currentQuestionIndex + 1}</div>
-                <img src="${question.image_url}" alt="Vocabulary question" class="question-image" loading="lazy">
-                <div class="question-text">What is this?</div>
-                <div class="options-grid">
+                <div style="text-align: center; margin-bottom: 0.5rem;">
+                    <img src="${question.image_url}" alt="Vocabulary question" style="max-width: 200px; max-height: 150px; object-fit: cover; border-radius: var(--radius-lg); box-shadow: var(--shadow-base);" loading="lazy">
+                </div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: #2D3748; text-align: center; margin-bottom: 1rem;">What is this?</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem;">
                     ${question.options.map((option, index) => `
-                        <div class="option-card" onclick="selectOption('${option}', this)">
+                        <div class="option-card" onclick="selectOption('${option}', this)" style="padding: 0.75rem; font-size: 0.875rem;">
                             ${option}
                         </div>
                     `).join('')}
@@ -241,6 +271,9 @@
                     `${results.score}/${results.total}`;
                 document.getElementById('motivation-message').textContent = results.message;
 
+                // Populate detailed results
+                populateDetailedResults();
+
                 if (results.percentage >= 70) {
                     createConfetti();
                 }
@@ -249,6 +282,48 @@
                 console.error('Error checking answers:', error);
                 showToast('😅 Oops! Something went wrong checking your answers.', 'error');
             }
+        }
+
+        function populateDetailedResults() {
+            const detailedResultsContainer = document.getElementById('detailed-results');
+            let resultsHTML = '';
+
+            currentGame.questions.forEach((question, index) => {
+                const userAnswer = currentGame.userAnswers[index] || 'No Answer';
+                const correctAnswer = currentGame.correctAnswers[index];
+                const isCorrect = userAnswer === correctAnswer;
+                
+                resultsHTML += `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; padding: 1rem; border-bottom: 1px solid #E2E8F0; align-items: center;">
+                        <!-- Picture Column -->
+                        <div style="text-align: center;">
+                            <img src="${question.image_url}" alt="Question ${index + 1}" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                        </div>
+                        
+                        <!-- User Answer Column -->
+                        <div style="text-align: center; padding: 0 0.5rem;">
+                            <div style="background: ${isCorrect ? '#10B981' : '#EF4444'}; color: white; padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-weight: 600; font-size: 0.875rem; display: inline-block; min-width: 80px;">
+                                ${userAnswer}
+                            </div>
+                            <div style="font-size: 0.75rem; margin-top: 0.25rem; color: ${isCorrect ? '#10B981' : '#EF4444'};">
+                                ${isCorrect ? '✅ Correct' : '❌ Wrong'}
+                            </div>
+                        </div>
+                        
+                        <!-- Correct Answer Column -->
+                        <div style="text-align: center; padding: 0 0.5rem;">
+                            <div style="background: #10B981; color: white; padding: 0.5rem 1rem; border-radius: var(--radius-lg); font-weight: 600; font-size: 0.875rem; display: inline-block; min-width: 80px;">
+                                ${correctAnswer}
+                            </div>
+                            <div style="font-size: 0.75rem; margin-top: 0.25rem; color: #10B981;">
+                                ✓ Answer
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            detailedResultsContainer.innerHTML = resultsHTML;
         }
 
         function playAgain() {
