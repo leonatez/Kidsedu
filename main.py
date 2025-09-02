@@ -8,15 +8,14 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-load_dotenv()
 
 app = FastAPI(title="Kidsedu - Educational Games for Kids", version="1.0.0")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Supabase configuration
-supabase_url = os.getenv("SUPABASE_URL", "")
-supabase_key = os.getenv("SUPABASE_ANON_KEY", "")
+supabase_url = os.environ.getenv("SUPABASE_URL", "")
+supabase_key = os.environ.getenv("SUPABASE_ANON_KEY", "")
 supabase: Client = None
 
 if supabase_url and supabase_key:
