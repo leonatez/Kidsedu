@@ -70,3 +70,8 @@ Core dependencies in requirements.txt:
 - `fastapi==0.104.1` - Web framework
 - `uvicorn==0.24.0` - ASGI server
 - `python-multipart==0.0.6` - Form data parsing
+- `supabase==2.3.4` - Supabase integration
+- `python-dotenv==1.0.0` - Environment variables
+
+## Deployment Trigger
+Last updated: 2025-09-02 - Modern redesign with vocabulary game deployed
