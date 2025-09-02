@@ -18,8 +18,15 @@ supabase_url = os.getenv("SUPABASE_URL", "")
 supabase_key = os.getenv("SUPABASE_ANON_KEY", "")
 supabase: Client = None
 
+# Debug logging for environment variables
+print(f"SUPABASE_URL loaded: {'✓' if supabase_url else '✗'} ({'***' + supabase_url[-10:] if supabase_url else 'NOT SET'})")
+print(f"SUPABASE_ANON_KEY loaded: {'✓' if supabase_key else '✗'} ({'***' + supabase_key[-10:] if supabase_key else 'NOT SET'})")
+
 if supabase_url and supabase_key:
     supabase = create_client(supabase_url, supabase_key)
+    print("✓ Supabase client initialized successfully")
+else:
+    print("✗ Supabase client not initialized - missing environment variables")
 
 class MathQuestion(BaseModel):
     question: str
