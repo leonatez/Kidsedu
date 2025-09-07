@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS vocabulary_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     image_url TEXT NOT NULL,
     vocabulary TEXT,
+    category TEXT DEFAULT 'default',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -34,3 +35,8 @@ FOR UPDATE USING (true);
 
 -- Enable Row Level Security
 ALTER TABLE vocabulary_items ENABLE ROW LEVEL SECURITY;
+
+-- Migration: Add category column to existing table and set default values
+-- Run this if you already have an existing vocabulary_items table
+-- ALTER TABLE vocabulary_items ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'default';
+-- UPDATE vocabulary_items SET category = 'default' WHERE category IS NULL;

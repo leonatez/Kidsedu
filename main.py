@@ -55,6 +55,7 @@ class VocabularyItem(BaseModel):
     id: str
     image_url: str
     vocabulary: Optional[str] = None
+    category: Optional[str] = "default"
     created_at: str
 
 class VocabularyQuestion(BaseModel):
@@ -246,7 +247,8 @@ async def upload_vocabulary_image(file: UploadFile = File(...)):
         # Save to database
         vocabulary_item = {
             "image_url": public_url,
-            "vocabulary": None
+            "vocabulary": None,
+            "category": "default"
         }
         
         result = supabase.table("vocabulary_items").insert(vocabulary_item).execute()
@@ -256,37 +258,91 @@ async def upload_vocabulary_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/vocabulary/update/{item_id}")
-async def update_vocabulary(item_id: str, vocabulary: str = Form(...)):
-    """Update vocabulary for an image"""
+async def update_vocabulary(item_id: str, vocabulary: str = Form(...), category: str = Form("default")):
+    """Update vocabulary and category for an image"""
     if not supabase:
         raise HTTPException(status_code=500, detail="Supabase not configured")
     
     try:
         result = supabase.table("vocabulary_items").update({
-            "vocabulary": vocabulary
+            "vocabulary": vocabulary,
+            "category": category
         }).eq("id", item_id).execute()
         
         return {"success": True, "item": result.data[0]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/vocabulary/generate", response_model=VocabularyGameResponse)
-async def generate_vocabulary_questions():
-    """Generate 10 vocabulary questions"""
+@app.post("/vocabulary/bulk_update")
+async def bulk_update_vocabulary(
+    vocabularies: str = Form(...), 
+    category: str = Form("default")
+):
+    """Bulk update vocabularies for all images with category"""
     if not supabase:
         raise HTTPException(status_code=500, detail="Supabase not configured")
     
     try:
-        # Get all vocabulary items that have vocabulary assigned
-        result = supabase.table("vocabulary_items").select("*").neq("vocabulary", None).execute()
+        # Get all vocabulary items ordered by created_at
+        result = supabase.table("vocabulary_items").select("*").order("created_at").execute()
+        items = result.data
+        
+        # Parse vocabularies (one per line)
+        vocab_list = [vocab.strip() for vocab in vocabularies.strip().split('\n') if vocab.strip()]
+        
+        if len(vocab_list) != len(items):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Number of vocabularies ({len(vocab_list)}) doesn't match number of images ({len(items)})"
+            )
+        
+        # Update each item
+        updated_items = []
+        for i, (item, vocab) in enumerate(zip(items, vocab_list)):
+            update_result = supabase.table("vocabulary_items").update({
+                "vocabulary": vocab,
+                "category": category
+            }).eq("id", item["id"]).execute()
+            updated_items.append(update_result.data[0])
+        
+        return {"success": True, "updated_count": len(updated_items), "items": updated_items}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/vocabulary/categories")
+async def get_vocabulary_categories():
+    """Get all available categories"""
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    
+    try:
+        result = supabase.table("vocabulary_items").select("category").neq("vocabulary", None).execute()
+        categories = list(set(item["category"] for item in result.data if item["category"]))
+        return {"categories": sorted(categories)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/vocabulary/generate", response_model=VocabularyGameResponse)
+async def generate_vocabulary_questions(category: Optional[str] = Form(None)):
+    """Generate 10 vocabulary questions, optionally filtered by category"""
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    
+    try:
+        # Get vocabulary items that have vocabulary assigned, optionally filtered by category
+        query = supabase.table("vocabulary_items").select("*").neq("vocabulary", None)
+        if category and category != "all":
+            query = query.eq("category", category)
+        
+        result = query.execute()
         vocabulary_items = result.data
         
         if len(vocabulary_items) < 4:
-            raise HTTPException(status_code=400, detail="Not enough vocabulary items. Need at least 4 items with vocabulary assigned.")
+            error_msg = f"Not enough vocabulary items in category '{category}'. Need at least 4 items." if category else "Not enough vocabulary items. Need at least 4 items with vocabulary assigned."
+            raise HTTPException(status_code=400, detail=error_msg)
         
         # Generate 10 questions without duplicates
         questions = []
-        used_items = set()  # Track used items to prevent duplicates
         available_items = vocabulary_items.copy()
         random.shuffle(available_items)  # Shuffle for randomness
         
@@ -295,9 +351,8 @@ async def generate_vocabulary_questions():
         for i in range(questions_to_generate):
             # Pick the next available item as correct answer (ensures no duplicates)
             correct_item = available_items[i]
-            used_items.add(correct_item["id"])
             
-            # Pick 3 other items as wrong answers (excluding used items if possible)
+            # Pick 3 other items as wrong answers from the same category
             wrong_items = [item for item in vocabulary_items 
                           if item["id"] != correct_item["id"] and 
                           item["vocabulary"] != correct_item["vocabulary"]]  # Avoid duplicate vocabulary words

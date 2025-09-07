@@ -44,6 +44,17 @@
                 </ul>
             </div>
 
+            <div style="margin: 1.5rem 0;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4A5568;">📂 Category:</label>
+                <select id="category-select" style="width: 100%; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); font-size: 1rem; background: white;">
+                    <option value="all">All Categories</option>
+                    <!-- Categories will be loaded dynamically -->
+                </select>
+                <div id="category-info" style="font-size: 0.875rem; color: #718096; margin-top: 0.5rem;">
+                    Loading categories...
+                </div>
+            </div>
+
             <button class="modern-btn modern-btn-secondary animate-pulse" onclick="startGame()" style="width: 100%; font-size: 1.125rem; padding: 1rem;">
                 <span>📚</span>
                 <span>Start Vocabulary Challenge</span>
@@ -154,11 +165,56 @@
             score: 0
         };
 
+        // Load categories on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadCategories();
+        });
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/vocabulary/categories');
+                if (response.ok) {
+                    const data = await response.json();
+                    const select = document.getElementById('category-select');
+                    const info = document.getElementById('category-info');
+                    
+                    // Clear existing options except "All Categories"
+                    while (select.children.length > 1) {
+                        select.removeChild(select.lastChild);
+                    }
+                    
+                    // Add category options
+                    data.categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                        select.appendChild(option);
+                    });
+                    
+                    info.textContent = data.categories.length > 0 
+                        ? `${data.categories.length} categories available`
+                        : 'No categories found';
+                } else {
+                    document.getElementById('category-info').textContent = 'Could not load categories';
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                document.getElementById('category-info').textContent = 'Error loading categories';
+            }
+        }
+
         async function startGame() {
             try {
+                const selectedCategory = document.getElementById('category-select').value;
+                
+                const formData = new FormData();
+                if (selectedCategory !== 'all') {
+                    formData.append('category', selectedCategory);
+                }
+                
                 const response = await fetch('/vocabulary/generate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    body: formData
                 });
 
                 if (!response.ok) {

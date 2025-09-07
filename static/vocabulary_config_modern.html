@@ -76,7 +76,40 @@
             </div>
         </div>
 
-        <!-- Bulk Assignment Section -->
+        <!-- Bulk Text Assignment Section -->
+        <div id="bulk-text-section" class="modern-card animate-slide-in" style="display: none; margin-bottom: 2rem;">
+            <div class="modern-card-header">
+                <div class="modern-card-icon" style="background: var(--gradient-purple);">
+                    <span>📝</span>
+                </div>
+                <div>
+                    <h3 class="modern-card-title">Bulk Text Assignment</h3>
+                    <p class="modern-card-subtitle">Type all vocabularies at once (one per line) with category</p>
+                </div>
+            </div>
+            
+            <div style="margin: 1.5rem 0;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4A5568;">Category:</label>
+                <input type="text" id="bulk-category" placeholder="Enter category (e.g., animals, fruits, colors)" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); font-size: 0.9rem; margin-bottom: 1rem;"
+                       value="default">
+            </div>
+            
+            <div style="margin: 1.5rem 0;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4A5568;">Vocabularies (one per line):</label>
+                <textarea id="bulk-vocabularies" placeholder="Enter vocabulary words, one per line&#10;Example:&#10;cat&#10;dog&#10;bird" 
+                          style="width: 100%; height: 150px; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); font-family: monospace; resize: vertical; font-size: 0.9rem;"
+                          oninput="checkBulkTextReady()"></textarea>
+                <div id="bulk-count" style="text-align: right; margin-top: 0.5rem; font-size: 0.875rem; color: #718096;"></div>
+            </div>
+            
+            <button id="bulk-text-btn" class="modern-btn modern-btn-purple" onclick="bulkAssignText()" disabled style="width: 100%;">
+                <span>🚀</span>
+                <span>Assign All with Category</span>
+            </button>
+        </div>
+
+        <!-- Individual Assignment Section -->
         <div id="bulk-assignment-section" class="modern-card animate-slide-in" style="display: none; margin-bottom: 2rem;">
             <div class="modern-card-header">
                 <div class="modern-card-icon" style="background: var(--gradient-success);">
@@ -84,7 +117,7 @@
                 </div>
                 <div>
                     <h3 class="modern-card-title">Quick Assignment</h3>
-                    <p class="modern-card-subtitle">Type vocabularies for all images at once</p>
+                    <p class="modern-card-subtitle">Type vocabularies for each image individually</p>
                 </div>
             </div>
             
@@ -259,8 +292,13 @@
                     </div>
                 `;
                 document.getElementById('bulk-assignment-section').style.display = 'none';
+                document.getElementById('bulk-text-section').style.display = 'none';
                 return;
             }
+            
+            // Show bulk text assignment when there are items
+            document.getElementById('bulk-text-section').style.display = 'block';
+            checkBulkTextReady();
 
             const unassignedItems = vocabularyItems.filter(item => !item.vocabulary);
             if (unassignedItems.length > 0) {
@@ -272,24 +310,40 @@
 
             const itemsHtml = vocabularyItems.map(item => `
                 <div class="modern-card" style="margin-bottom: 1.5rem;">
-                    <div style="margin-bottom: 1rem;">
+                    <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <span class="status-badge ${item.vocabulary ? 'status-assigned' : 'status-pending'}">
                             ${item.vocabulary ? '✅ Assigned' : '⏳ Pending'}
+                        </span>
+                        <span style="font-size: 0.8rem; color: #718096; background: #F7FAFC; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm);">
+                            📂 ${item.category || 'default'}
                         </span>
                     </div>
                     <img src="${item.image_url}" alt="Vocabulary item" 
                          style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-base); margin-bottom: 1rem;" 
                          loading="lazy">
-                    <input 
-                        type="text" 
-                        placeholder="Enter vocabulary word..." 
-                        value="${item.vocabulary || ''}"
-                        data-item-id="${item.id}"
-                        style="width: 100%; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); margin-bottom: 1rem; font-size: 1rem; transition: border-color 0.3s ease;"
-                        onfocus="this.style.borderColor = 'var(--primary-blue)'; this.style.boxShadow = '0 0 0 3px rgba(74, 108, 247, 0.1)'"
-                        onblur="this.style.borderColor = '#E2E8F0'; this.style.boxShadow = 'none'"
-                        oninput="this.nextElementSibling.disabled = !this.value.trim()"
-                    >
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input 
+                            type="text" 
+                            placeholder="Enter vocabulary word..." 
+                            value="${item.vocabulary || ''}"
+                            data-item-id="${item.id}"
+                            style="padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); font-size: 1rem; transition: border-color 0.3s ease;"
+                            onfocus="this.style.borderColor = 'var(--primary-blue)'; this.style.boxShadow = '0 0 0 3px rgba(74, 108, 247, 0.1)'"
+                            onblur="this.style.borderColor = '#E2E8F0'; this.style.boxShadow = 'none'"
+                            oninput="updateSaveButton('${item.id}')"
+                        >
+                        <input 
+                            type="text" 
+                            placeholder="Category" 
+                            value="${item.category || 'default'}"
+                            data-item-id="${item.id}"
+                            data-field="category"
+                            style="width: 120px; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: var(--radius-base); font-size: 0.9rem; transition: border-color 0.3s ease;"
+                            onfocus="this.style.borderColor = 'var(--primary-blue)'; this.style.boxShadow = '0 0 0 3px rgba(74, 108, 247, 0.1)'"
+                            onblur="this.style.borderColor = '#E2E8F0'; this.style.boxShadow = 'none'"
+                            oninput="updateSaveButton('${item.id}')"
+                        >
+                    </div>
                     <button 
                         class="modern-btn modern-btn-primary" 
                         onclick="saveVocabulary('${item.id}')"
@@ -354,6 +408,7 @@
                 const promises = assignments.map(async ({ itemId, vocabulary }) => {
                     const formData = new FormData();
                     formData.append('vocabulary', vocabulary);
+                    formData.append('category', 'default'); // Individual assignments get default category
                     
                     const response = await fetch(`/vocabulary/update/${itemId}`, {
                         method: 'POST',
@@ -386,16 +441,94 @@
             }
         }
 
+        function checkBulkTextReady() {
+            const textarea = document.getElementById('bulk-vocabularies');
+            const lines = textarea.value.trim().split('\n').filter(line => line.trim() !== '');
+            const countDiv = document.getElementById('bulk-count');
+            const bulkBtn = document.getElementById('bulk-text-btn');
+            
+            countDiv.textContent = `${lines.length} vocabularies`;
+            bulkBtn.disabled = lines.length === 0 || lines.length !== vocabularyItems.length;
+            
+            if (lines.length > 0 && lines.length !== vocabularyItems.length) {
+                countDiv.innerHTML = `${lines.length} vocabularies <span style="color: #E53E3E;">(need ${vocabularyItems.length})</span>`;
+            }
+        }
+
+        async function bulkAssignText() {
+            const textarea = document.getElementById('bulk-vocabularies');
+            const categoryInput = document.getElementById('bulk-category');
+            const bulkBtn = document.getElementById('bulk-text-btn');
+            const originalText = bulkBtn.innerHTML;
+            
+            const vocabularies = textarea.value.trim();
+            const category = categoryInput.value.trim() || 'default';
+            
+            if (!vocabularies) {
+                showToast('Please enter vocabulary words!', 'warning');
+                return;
+            }
+            
+            bulkBtn.innerHTML = '<span>⏳</span><span>Assigning...</span>';
+            bulkBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('vocabularies', vocabularies);
+                formData.append('category', category);
+                
+                const response = await fetch('/vocabulary/bulk_update', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to update vocabularies');
+                }
+                
+                const result = await response.json();
+                
+                // Update local vocabulary items
+                await loadVocabularyItems();
+                
+                showToast(`✅ Successfully assigned ${result.updated_count} vocabularies to category "${category}"!`, 'success');
+                
+                // Clear form
+                textarea.value = '';
+                categoryInput.value = 'default';
+                checkBulkTextReady();
+                
+            } catch (error) {
+                console.error('Bulk text assignment error:', error);
+                showToast(`❌ ${error.message}`, 'error');
+            } finally {
+                bulkBtn.innerHTML = originalText;
+                bulkBtn.disabled = false;
+            }
+        }
+
+        function updateSaveButton(itemId) {
+            const vocabInput = document.querySelector(`input[data-item-id='${itemId}']:not([data-field])`);
+            const saveBtn = document.querySelector(`button[onclick="saveVocabulary('${itemId}')"]`);
+            
+            if (vocabInput && saveBtn) {
+                saveBtn.disabled = !vocabInput.value.trim();
+            }
+        }
+
         async function saveVocabulary(itemId) {
-            const input = document.querySelector(`input[data-item-id='${itemId}']`);
-            const vocabulary = input.value.trim();
+            const vocabInput = document.querySelector(`input[data-item-id='${itemId}']:not([data-field])`);
+            const categoryInput = document.querySelector(`input[data-item-id='${itemId}'][data-field='category']`);
+            const vocabulary = vocabInput.value.trim();
+            const category = categoryInput.value.trim() || 'default';
             
             if (!vocabulary) {
                 showToast('Please enter a vocabulary word!', 'warning');
                 return;
             }
 
-            const saveBtn = input.nextElementSibling;
+            const saveBtn = document.querySelector(`button[onclick="saveVocabulary('${itemId}')"]`);
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '<span>⏳</span><span>Saving...</span>';
             saveBtn.disabled = true;
@@ -403,6 +536,7 @@
             try {
                 const formData = new FormData();
                 formData.append('vocabulary', vocabulary);
+                formData.append('category', category);
 
                 const response = await fetch(`/vocabulary/update/${itemId}`, {
                     method: 'POST',
@@ -414,6 +548,7 @@
                 const item = vocabularyItems.find(i => i.id === itemId);
                 if (item) {
                     item.vocabulary = vocabulary;
+                    item.category = category;
                 }
 
                 renderVocabularyItems();
